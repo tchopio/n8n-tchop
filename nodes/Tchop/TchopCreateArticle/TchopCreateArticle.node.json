@@ -1,0 +1,83 @@
+{
+	"displayName": "Tchop: Create Article",
+	"name": "tchopCreateArticle",
+	"icon": "file:../shared/icons/tchop.svg",
+	"group": ["transform"],
+	"version": 1,
+	"description": "Create an article post in tchop",
+	"defaults": {
+		"name": "Tchop Create Article"
+	},
+	"inputs": ["main"],
+	"outputs": ["main"],
+	"credentials": [
+		{
+			"name": "tchopApi",
+			"required": true
+		}
+	],
+	"properties": [
+		{
+			"displayName": "Story ID",
+			"name": "storyId",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The ID of the story to create the post in"
+		},
+		{
+			"displayName": "Source",
+			"name": "source",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The source of the article"
+		},
+		{
+			"displayName": "Title",
+			"name": "title",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The title of the article"
+		},
+		{
+			"displayName": "Description",
+			"name": "description",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The description of the article"
+		},
+		{
+			"displayName": "URL",
+			"name": "url",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The URL of the article"
+		},
+		{
+			"displayName": "Published",
+			"name": "published",
+			"type": "boolean",
+			"default": false,
+			"required": true,
+			"description": "Whether the article is published"
+		},
+		{
+			"displayName": "Image",
+			"name": "image",
+			"type": "string",
+			"default": "",
+			"description": "The image URL of the article"
+		},
+		{
+			"displayName": "Author",
+			"name": "author",
+			"type": "string",
+			"default": "",
+			"description": "The author of the article"
+		}
+	]
+}

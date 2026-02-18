@@ -1,0 +1,17 @@
+{
+  "node": {
+    "name": "rssParser",
+    "displayName": "Parsers: RSS",
+    "icon": "",
+    "group": ["transform"],
+    "version": 1,
+    "description": "Fetch and parse an RSS feed and output items",
+    "defaults": {
+      "name": "RSS Parser"
+    },
+    "inputs": [],
+    "outputs": [
+      "main"
+    ]
+  }
+}
