@@ -11,7 +11,7 @@ async function test() {
         getCredentials: async (type: string) => {
             if (type === 'tchopApi') {
                 return {
-                    baseUrl: 'https://tchop-staging.com',
+                    baseUrl: 'https://app.tchop.io',
                     organisationToken: 'aae48bbec222d7c7b4a3bf38cff9dfeb6e62e4f1', // from curl example
                     userToken: 'aae48bbec222d7c7b4a3bf38cff9dfeb6e62e4f1', // from curl example
                 };

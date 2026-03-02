@@ -64,8 +64,7 @@ nodes/
 
 ### Credentials
 
-- **TchopApi** (`credentials/TchopApi.credentials.ts`) — Organisation Token, User Token, Base URL (default: `https://tchop-staging.com`), Sub-domain
-- **OpenAIExpressApi** (`credentials/OpenAIExpressApi.credentials.ts`) — API Key for article summarization
+- **TchopApi** (`credentials/TchopApi.credentials.ts`) — Organisation Token, User Token, Base URL, Sub-domain
 
 ### Adding a New Node
 

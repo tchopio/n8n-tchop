@@ -12,7 +12,7 @@ export class TchopApi implements ICredentialType {
 	icon: Icon = 'file:icons/ic_tchop.svg';
 	group = ['main'];
 	description = 'Use your Tchop API credentials to authenticate to the Tchop API.';
-	documentationUrl = 'https://tchop-staging.com/api/graphql/webapp';
+	documentationUrl = 'https://github.com/tchop-io/n8n-nodes-tchop';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Organization Token',
@@ -34,7 +34,7 @@ export class TchopApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://tchop-staging.com',
+			default: '',
 			required: true,
 		},
 		{
