@@ -116,17 +116,7 @@ function parseFeed(xml: string): RawFeed {
 }
 
 export class RssParserWrapper {
-	async parseURL(url: string): Promise<BaseRssItem[]> {
-		const response = await fetch(url, {
-			headers: {
-				'User-Agent': 'n8n-nodes-tchop RSS Parser',
-				'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
-			},
-		});
-		if (!response.ok) {
-			throw new Error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`);
-		}
-		const xml = await response.text();
+	parseXml(xml: string): BaseRssItem[] {
 		const feed = parseFeed(xml);
 		return feed.items.map((item) => this.transformItem(item, feed));
 	}

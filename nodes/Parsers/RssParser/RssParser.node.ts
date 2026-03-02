@@ -98,7 +98,15 @@ export class RssParser implements INodeType {
 					);
 				}
 
-				const itemsToProcess = (await parser.parseURL(rssUri)).slice(0, limit);
+				const xml = await this.helpers.httpRequest({
+					method: 'GET',
+					url: rssUri,
+					headers: {
+						'User-Agent': 'n8n-nodes-tchop RSS Parser',
+						'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
+					},
+				}) as string;
+				const itemsToProcess = parser.parseXml(xml).slice(0, limit);
 
 				// Persistent storage per node, partitioned by sourceId
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
