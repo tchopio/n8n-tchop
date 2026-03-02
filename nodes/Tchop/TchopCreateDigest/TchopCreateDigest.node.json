@@ -1,0 +1,65 @@
+{
+	"displayName": "Tchop: Create Digest",
+	"name": "tchopCreateDigest",
+	"icon": "file:../shared/icons/tchop.svg",
+	"group": ["transform"],
+	"version": 1,
+	"description": "Create a digest post in tchop",
+	"defaults": {
+		"name": "Tchop Create Digest"
+	},
+	"inputs": ["main"],
+	"outputs": ["main"],
+	"credentials": [
+		{
+			"name": "tchopApi",
+			"required": true
+		}
+	],
+	"properties": [
+		{
+			"displayName": "Story ID",
+			"name": "storyId",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The ID of the story to create the post in"
+		},
+		{
+			"displayName": "Title",
+			"name": "title",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The title of the digest"
+		},
+		{
+			"displayName": "Headline",
+			"name": "headline",
+			"type": "string",
+			"default": "",
+			"description": "Headline shown in the digest (defaults to Title if empty)"
+		},
+		{
+			"displayName": "Source Name",
+			"name": "sourceName",
+			"type": "string",
+			"default": "n8n",
+			"description": "Source name to attribute the digest to"
+		},
+		{
+			"displayName": "Abstract",
+			"name": "abstract",
+			"type": "string",
+			"default": "",
+			"description": "The abstract of the digest"
+		},
+		{
+			"displayName": "Content (Markdown)",
+			"name": "content",
+			"type": "string",
+			"default": "",
+			"description": "The content of the digest in Markdown format"
+		}
+	]
+}
