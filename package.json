@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tchop",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "n8n nodes for tchop",
 	"license": "MIT",
 	"homepage": "https://tchop.io",
