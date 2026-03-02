@@ -14,7 +14,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tchop-io/n8n-nodes-tchop.git"
+		"url": "https://github.com/tchopio/n8n-tchop.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
