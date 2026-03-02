@@ -9,9 +9,6 @@ export function buildTchopHeaders(credentials: IDataObject): Record<string, stri
 		'Content-Type': 'application/json',
 		'Accept': 'application/json',
 		'Authorization': userToken ? `Bearer ${userToken}` : '',
-		'x-tchop-app-id': 'io.tchop.dev',
-		'x-tchop-app-platform': 'android',
-		'x-tchop-app-version': '4.0.0',
 		'x-tchop-app-organisation-token': organisationToken,
 		'x-tchop-token': userToken,
 		'x-tchop-webapp-organisation': subDomain || 'quantum',
@@ -25,7 +22,7 @@ export async function tchopGraphQLRequest<T = unknown>(
 	variables: IDataObject = {},
 ): Promise<T> {
 	const credentials = await this.getCredentials('tchopApi');
-	const baseUrl = ((credentials.baseUrl as string) || 'https://tchop-staging.com').replace(/\/$/, '');
+	const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
 	const url = `${baseUrl}/api/graphql/webapp`;
 
 	const headers = buildTchopHeaders(credentials as unknown as IDataObject);
@@ -36,8 +33,6 @@ export async function tchopGraphQLRequest<T = unknown>(
 	};
 
 	try {
-		// Use n8n's built-in httpRequest helper which handles the underlying request
-		// without needing external libraries like graphql-request
 		const response = await this.helpers.httpRequest({ url, method: 'POST', headers, body });
 		const parsedResponse = typeof response === 'string' ? JSON.parse(response) : response;
 
@@ -47,13 +42,9 @@ export async function tchopGraphQLRequest<T = unknown>(
 		return parsedResponse.data as T;
 	} catch (error) {
 		if (error.response && error.response.body) {
-			try {
-				const errorData = typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
-				if (errorData.errors) {
-					throw new Error(`GraphQL Error: ${errorData.errors.map((e: { message: string }) => e.message).join(', ')}`);
-				}
-			} catch (ignore) {
-				// ignore
+			const errorData = typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
+			if (errorData.errors) {
+				throw new Error(`GraphQL Error: ${errorData.errors.map((e: { message: string }) => e.message).join(', ')}`);
 			}
 		}
 		throw error;

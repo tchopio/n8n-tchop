@@ -13,6 +13,28 @@ export interface UploadResponse {
 }
 
 /**
+ * Extract a human-readable error message from an n8n HTTP error.
+ * n8n wraps HTTP failures in various shapes depending on the helper used.
+ */
+function extractUploadError(e: unknown, type: string): string {
+	const err = e as Record<string, unknown>;
+
+	// n8n httpRequest errors often carry the body in different places
+	const body = (err.response as Record<string, unknown>)?.body
+		?? (err.response as Record<string, unknown>)?.data
+		?? err.body
+		?? err.data;
+	if (body) {
+		const text = typeof body === 'string' ? body : JSON.stringify(body);
+		const statusCode = err.httpCode ?? err.statusCode
+			?? (err.response as Record<string, unknown>)?.statusCode ?? '';
+		return `${type} upload failed (${statusCode}): ${text}`;
+	}
+
+	return `${type} upload failed: ${(e as Error).message}`;
+}
+
+/**
  * Base function to upload a file to Tchop FS service.
  */
 async function uploadFile(
@@ -22,19 +44,14 @@ async function uploadFile(
 	const { file, template = 'item', type } = params;
 
 	const credentials = await this.getCredentials('tchopApi');
-	const baseUrl = ((credentials.baseUrl as string) || 'https://tchop-staging.com').replace(
-		/\/$/,
-		'',
-	);
+	const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
 	const organisation = credentials.subDomain as string;
 	const uploadUrl = `${baseUrl}/api/fs/upload/${type}`;
-	// const uploadUrl = `https://bin.kitechs.xyz/a1d51de1-d67b-41fc-9417-48cbd59b1542/api/fs/upload/${type}`;
 
 	const filename = Math.random().toString(36).substring(7);
 	const contentType = type === 'image' ? 'image/*' : 'audio/*';
 
 	const formData = new FormData();
-	console.log('params: ', params);
 	if (file instanceof Buffer) {
 		const blob = new Blob([new Uint8Array(file)], { type: contentType });
 		formData.append('file', blob, filename);
@@ -51,17 +68,19 @@ async function uploadFile(
 	const options: IHttpRequestOptions = {
 		method: 'POST',
 		qs: { organisation },
-		// @ts-ignore
 		body: formData,
 		url: uploadUrl,
 	};
 
 	try {
-		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'tchopApi', options,);
+		const response = await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'tchopApi',
+			options,
+		);
 		return response as UploadResponse;
 	} catch (e) {
-		console.error(`${type} upload failed:`, e.response?.data || e.message);
-		throw e;
+		throw new Error(extractUploadError(e, type));
 	}
 }
 
@@ -88,15 +107,19 @@ export async function uploadImageUrl(
 		template?: string;
 	},
 ): Promise<UploadResponse> {
-	const downloadResponse = await this.helpers.httpRequest({
-		method: 'GET',
-		url: params.url,
-		encoding: 'arraybuffer',
-		returnFullResponse: true,
-	});
+	let downloadResponse;
+	try {
+		downloadResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: params.url,
+			encoding: 'arraybuffer',
+			returnFullResponse: true,
+		});
+	} catch (e) {
+		throw new Error(extractUploadError(e, 'image'));
+	}
 
 	const uploadFileBuffer = downloadResponse.body as Buffer;
-
 	return uploadFile.call(this, {
 		file: uploadFileBuffer,
 		template: params.template,
@@ -125,16 +148,19 @@ export async function uploadAudioUrl(
 		url: string;
 	},
 ): Promise<UploadResponse> {
-	console.log("upload audio", params);
-	const downloadResponse = await this.helpers.httpRequest({
-		method: 'GET',
-		url: params.url,
-		encoding: 'arraybuffer',
-		returnFullResponse: true,
-	});
+	let downloadResponse;
+	try {
+		downloadResponse = await this.helpers.httpRequest({
+			method: 'GET',
+			url: params.url,
+			encoding: 'arraybuffer',
+			returnFullResponse: true,
+		});
+	} catch (e) {
+		throw new Error(extractUploadError(e, 'audio'));
+	}
 
 	const uploadFileBuffer = downloadResponse.body as Buffer;
-	console.log('audio downloaded', params);
 	return uploadFile.call(this, {
 		file: uploadFileBuffer,
 		type: 'audio',

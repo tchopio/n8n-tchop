@@ -81,6 +81,20 @@ mutation StoryCardParseUrl($input: StoryCardParseUrlInput!) {
 }
 `;
 
+export const STORY_CARD_DELETE_MUTATION = `
+mutation StoryCardDelete($input: StoryCardDeleteInput!) {
+  storyCardDelete(input: $input) {
+    payload
+    error {
+      __typename
+      ... on StoryCardNotFoundError { message }
+      ... on StoryReadOnlyAccessError { message }
+      ... on UnknownError { kind message }
+    }
+  }
+}
+`;
+
 export const GET_CHANNELS_QUERY = `
 query GetChannels {
   channels {

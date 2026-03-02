@@ -84,6 +84,7 @@ export class OpenGraphParser implements INodeType {
 						metadata['author'] ||
 						metadata['twitter:creator'] ||
 						'',
+					source: metadata['og:site_name'] || '',
 					site_name: metadata['og:site_name'] || '',
 					type: metadata['og:type'] || 'website',
 					published_time: metadata['article:published_time'] || '',

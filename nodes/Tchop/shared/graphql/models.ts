@@ -110,13 +110,6 @@ export interface StoryCardPostInStoryResult {
 	};
 }
 
-// Helper shapes for formatter
-export type DigestBlock =
-	| { type: 'header'; data: { text: string; level?: number } }
-	| { type: 'paragraph'; data: { text: string } }
-	| { type: 'delimiter'; data: Record<string, never> }
-	| { type: 'embed-link'; data: { url: string; caption?: string } };
-
 export interface StoryCard {
 	id: string;
 	type: string;

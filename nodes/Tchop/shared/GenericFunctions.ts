@@ -13,22 +13,19 @@ export async function tchopApiRequest(
 	query: IDataObject = {},
 ): Promise<any> {
 	const credentials = await this.getCredentials('tchopApi');
-	const baseUrl = (credentials.baseUrl as string || 'https://tchop-staging.com').replace(/\/$/, '');
+	const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
 
 	const options: IHttpRequestOptions = {
 		method,
 		body,
 		qs: query,
 		url: `${baseUrl}${endpoint}`,
-		headers: {
-			'x-tchop-app-id': 'io.tchop.dev',
-			'x-tchop-app-platform': 'android',
-			'x-tchop-app-version': '4.0.0',
-			'x-tchop-app-organisation-token': credentials.organisationToken as string,
-			'x-tchop-token': credentials.userToken as string,
-		},
 		json: true,
 	};
 
-	return await this.helpers.httpRequest(options);
+	return await this.helpers.httpRequestWithAuthentication.call(
+		this,
+		'tchopApi',
+		options,
+	);
 }

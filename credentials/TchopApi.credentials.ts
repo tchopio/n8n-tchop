@@ -11,9 +11,8 @@ export class TchopApi implements ICredentialType {
 	displayName = 'Tchop API';
 	icon: Icon = 'file:icons/ic_tchop.svg';
 	group = ['main'];
-	description =
-		'Use your Tchop API credentials to authenticate to the Tchop API. See https://tchop-staging.com/api/docs/#/ for more details.';
-	documentationUrl = 'https://tchop-staging.com/api/docs#/';
+	description = 'Use your Tchop API credentials to authenticate to the Tchop API.';
+	documentationUrl = 'https://tchop-staging.com/api/graphql/webapp';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Organization Token',
@@ -61,9 +60,6 @@ export class TchopApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				'x-tchop-app-id': 'io.tchop.dev',
-				'x-tchop-app-platform': 'android',
-				'x-tchop-app-version': '4.0.0',
 				'x-tchop-app-organisation-token': '={{$credentials.organisationToken}}',
 				'x-tchop-token': '={{$credentials.userToken}}',
 				'x-tchop-webapp-organisation': '={{$credentials.subDomain}}',

@@ -8,6 +8,7 @@ export interface BaseRssItem {
 	imageUrl: string;
 	guid: string;
 	pubDate: string;
+	source: string;
 	categories: string[];
 	author: {
 		name: string;
@@ -127,6 +128,8 @@ export class RssParserWrapper {
 			authorHandle = item.author.uri || authorHandle;
 		}
 
+		const source = (feed.title || '').toString();
+
 		return {
 			title,
 			description,
@@ -135,6 +138,7 @@ export class RssParserWrapper {
 			imageUrl,
 			guid,
 			pubDate: item.isoDate || item.pubDate || '',
+			source,
 			categories: item.categories || [],
 			author: {
 				name: authorName,
