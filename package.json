@@ -45,7 +45,6 @@
 			"dist/nodes/Tchop/TchopGetStoryItems/TchopGetStoryItems.node.js",
 			"dist/nodes/Tchop/TchopDeleteItem/TchopDeleteItem.node.js",
 			"dist/nodes/Tchop/TchopMarkdownToPost/TchopMarkdownToPost.node.js",
-			"dist/nodes/Tchop/TchopUploadImageByUrl/TchopUploadImageByUrl.node.js",
 			"dist/nodes/Parsers/RssParser/RssParser.node.js",
 			"dist/nodes/Parsers/OpenGraphParser/OpenGraphParser.node.js"
 		]
