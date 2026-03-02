@@ -11,6 +11,7 @@ export async function tchopApiRequest(
 	endpoint: string,
 	body: IDataObject = {},
 	query: IDataObject = {},
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
 	const credentials = await this.getCredentials('tchopApi');
 	const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');

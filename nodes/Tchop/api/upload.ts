@@ -173,7 +173,7 @@ export interface UploadImageParams {
 	template?: string; // e.g. "item", "avatar", etc.
 }
 
-export interface UploadImageResponse extends UploadResponse {}
+export type UploadImageResponse = UploadResponse;
 
 /**
  * Upload an image to Tchop FS service.

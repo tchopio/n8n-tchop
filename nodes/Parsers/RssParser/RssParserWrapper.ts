@@ -1,3 +1,4 @@
+// eslint-disable-next-line @n8n/community-nodes/no-restricted-imports
 import Parser from 'rss-parser';
 
 export interface BaseRssItem {
@@ -43,18 +44,20 @@ export class RssParserWrapper {
 
 	async parseURL(url: string): Promise<BaseRssItem[]> {
 		const feed = await this.parser.parseURL(url);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		return feed.items.map((item) => this.transformItem(item as Record<string, any>, feed as Record<string, any>));
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private transformItem(item: Record<string, any>, feed: Record<string, any>): BaseRssItem {
 		const guid = (item.guid || item.id || item.link || '').toString();
 		const url = (item.link || '').toString();
 		const title = (item.title || '').toString();
-		
+
 		// Content / Description
 		const content = (item.content || item.summary || item.itunesSummary || '').toString();
 		let description = (item.contentSnippet || item.itunesSubtitle || item.mediaDescription || content || '').toString();
-		
+
 		// If it's a YouTube feed, mediaGroup might have a better description
 		if (item.mediaGroup && item.mediaGroup['media:description']) {
 			description = item.mediaGroup['media:description'][0];
@@ -66,6 +69,7 @@ export class RssParserWrapper {
 			imageUrl = item.enclosure.url;
 		} else if (item.mediaContent) {
 			const mediaArray = Array.isArray(item.mediaContent) ? item.mediaContent : [item.mediaContent];
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const imageMedia = mediaArray.find((m: any) => m.$?.medium === 'image' || m.$?.type?.startsWith('image/')) || mediaArray[0];
 			imageUrl = imageMedia?.$?.url || '';
 		} else if (item.mediaThumbnail) {
@@ -96,7 +100,7 @@ export class RssParserWrapper {
 
 		// YouTube specific author image
 		if (!rootAuthorImage && feed.items?.[0]?.author?.uri?.includes('youtube.com')) {
-			// YouTube RSS doesn't provide channel image easily in the feed, 
+			// YouTube RSS doesn't provide channel image easily in the feed,
 			// but we've already done our best with standard fields.
 		}
 
@@ -116,7 +120,7 @@ export class RssParserWrapper {
 		if (item.author && typeof item.author === 'object') {
 			// Some parsers might return object for author
 		}
-		
+
 		// If it's a YouTube feed, it might have author info in a specific way
 		if (item.mediaGroup && item.mediaGroup['media:community']) {
 			// This is just an example, YouTube RSS doesn't always have author image here

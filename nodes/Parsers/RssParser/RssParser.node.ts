@@ -1,4 +1,5 @@
 import {
+	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
@@ -100,6 +101,7 @@ export class RssParser implements INodeType {
 				const itemsToProcess = (await parser.parseURL(rssUri)).slice(0, limit);
 
 				// Persistent storage per node, partitioned by sourceId
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const staticData = this.getWorkflowStaticData('node') as Record<string, any>;
 				if (!staticData.seenBySource) {
 					staticData.seenBySource = {} as Record<string, string[]>;
@@ -139,7 +141,7 @@ export class RssParser implements INodeType {
 				staticData.__dataChanged = true;
 
 				// If triggerOnNew is false and feed had no items, itemsOut stays empty (expected)
-				const executionData = this.helpers.returnJsonArray(itemsOut as any);
+				const executionData = this.helpers.returnJsonArray(itemsOut as IDataObject[]);
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {

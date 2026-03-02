@@ -113,7 +113,8 @@ export class TchopCreatePost implements INodeType {
 					headline,
 					sourceName,
 					abstract,
-					contentBlocks: contentBlocks as any,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				contentBlocks: contentBlocks as any,
 				};
 				const responseData = (await createPost.call(this, params)) as unknown as IDataObject;
 				// Handle potential nested data object from graphql-request

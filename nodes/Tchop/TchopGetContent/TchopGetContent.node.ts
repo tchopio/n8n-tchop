@@ -117,11 +117,13 @@ export class TchopGetContent implements INodeType {
 						{ excludeItems: true },
 					);
 					if (storiesResponse && storiesResponse.stories && Array.isArray(storiesResponse.stories)) {
-						storyIds = storiesResponse.stories.map((story: any) => story.id);
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					storyIds = storiesResponse.stories.map((story: any) => story.id);
 					}
 				}
 
-				const allItems: any[] = [];
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const allItems: any[] = [];
 				for (const storyId of storyIds) {
 					let offset = 0;
 					const limit = 75;

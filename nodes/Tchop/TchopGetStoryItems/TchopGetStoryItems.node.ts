@@ -47,16 +47,16 @@ export class TchopGetStoryItems implements INodeType {
 						value: 'all',
 					},
 					{
-						name: 'Last 7 Days',
-						value: 'last7d',
-					},
-					{
 						name: 'Last 24 Hours',
 						value: 'last24h',
 					},
 					{
 						name: 'Last 30 Days',
 						value: 'last30d',
+					},
+					{
+						name: 'Last 7 Days',
+						value: 'last7d',
 					},
 					{
 						name: 'Today',
@@ -100,7 +100,7 @@ export class TchopGetStoryItems implements INodeType {
 				const timeRange = this.getNodeParameter('timeRange', i) as string;
 				const timeLimit = getTimeLimit(timeRange);
 
-				const allItems: any[] = [];
+				const allItems: IDataObject[] = [];
 				let offset = 0;
 				const limit = 75;
 				let hasMore = true;
