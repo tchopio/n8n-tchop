@@ -5,7 +5,7 @@ export class OpenGraphParser implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Parsers: OG',
 		name: 'openGraphParser',
-		icon: 'fa:file-code',
+		icon: 'file:../../Tchop/shared/icons/tchop.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Fetch a page and parse its OpenGraph metadata',
@@ -14,6 +14,7 @@ export class OpenGraphParser implements INodeType {
 		},
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
+		usableAsTool: true,
 		properties: [
 			{
 				displayName: 'URL',
@@ -40,23 +41,23 @@ export class OpenGraphParser implements INodeType {
 			try {
 				const url = this.getNodeParameter('url', i) as string;
 				const metadataParam = this.getNodeParameter('metadata', i, {}) as AssignmentCollectionValue;
-				const userMeta: Record<string, string> = (metadataParam as any)?.assignments
+				const userMeta: Record<string, string> = metadataParam?.assignments
 					? (metadataParam.assignments as Array<{ name: string; value: string }>).reduce(
 						(acc, { name, value }) => ({ ...acc, [name]: value }),
 						{},
 					)
 					: {};
 
-				const response = await this.helpers.request({
+				const response = (await this.helpers.httpRequest({
 					method: 'GET',
-					uri: url,
+					url,
 					headers: {
 						'User-Agent':
 							'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 					},
-				});
+				})) as string;
 
-				const metadata: Record<string, any> = {};
+				const metadata: Record<string, unknown> = {};
 
 				// Extract all meta tags
 				const metaRegex = /<meta\s+([^>]+)>/gi;

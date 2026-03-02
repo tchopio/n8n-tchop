@@ -1,19 +1,20 @@
 {
 	"name": "n8n-nodes-tchop",
 	"version": "0.1.0",
-	"description": "",
+	"description": "n8n nodes for tchop",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://tchop.io",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"tchop"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "tchop",
+		"email": "support@tchop.io"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/tchop-io/n8n-nodes-tchop.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -31,18 +32,24 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/TchopApi.credentials.js"
+			"dist/credentials/TchopApi.credentials.js",
+			"dist/credentials/OpenAIExpressApi.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/Tchop/TchopCreateArticle/TchopCreateArticle.node.js",
-			"dist/nodes/Tchop/TchopCreateText/TchopCreateText.node.js",
-			"dist/nodes/Tchop/TchopCreateSocial/TchopCreateSocial.node.js",
-			"dist/nodes/Tchop/TchopCreateThread/TchopCreateThread.node.js",
 			"dist/nodes/Tchop/TchopCreateAudio/TchopCreateAudio.node.js",
-			"dist/nodes/Tchop/TchopCreateVideo/TchopCreateVideo.node.js",
-			"dist/nodes/Tchop/TchopCreatePdf/TchopCreatePdf.node.js",
+			"dist/nodes/Tchop/TchopCreateDigest/TchopCreateDigest.node.js",
+			"dist/nodes/Tchop/TchopCreatePost/TchopCreatePost.node.js",
+			"dist/nodes/Tchop/TchopCreateSocial/TchopCreateSocial.node.js",
+			"dist/nodes/Tchop/TchopGetContent/TchopGetContent.node.js",
+			"dist/nodes/Tchop/TchopGetChannels/TchopGetChannels.node.js",
+			"dist/nodes/Tchop/TchopGetStories/TchopGetStories.node.js",
+			"dist/nodes/Tchop/TchopGetStoryItems/TchopGetStoryItems.node.js",
+			"dist/nodes/Tchop/TchopUploadImageByUrl/TchopUploadImageByUrl.node.js",
 			"dist/nodes/Parsers/RssParser/RssParser.node.js",
-			"dist/nodes/Parsers/OpenGraphParser/OpenGraphParser.node.js"
+			"dist/nodes/Parsers/OpenGraphParser/OpenGraphParser.node.js",
+			"dist/nodes/Parsers/InstagramParser/InstagramParser.node.js",
+			"dist/nodes/Summarizer/ArticleSummarizer/ArticleSummarizer.node.js"
 		]
 	},
 	"devDependencies": {
@@ -56,6 +63,7 @@
 		"n8n-workflow": "*"
 	},
 	"dependencies": {
+		"graphql": "^16.12.0",
 		"rss-parser": "^3.13.0"
 	}
 }

@@ -6,22 +6,21 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from 'n8n-workflow';
-import { tchopApiRequest } from '../shared/GenericFunctions';
+import { getStoriesByChannelId } from '../shared/graphql/stories';
 
-export class TchopCreateText implements INodeType {
+export class TchopGetStories implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Tchop: Create Text',
-		name: 'tchopCreateText',
+		displayName: 'Tchop: Get Stories',
+		name: 'tchopGetStories',
 		icon: 'file:../shared/icons/tchop.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Create a text post in tchop',
+		description: 'Get list of stories from a channel in tchop',
 		defaults: {
-			name: 'Tchop Create Text',
+			name: 'Tchop Get Stories',
 		},
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
-		usableAsTool: true,
 		credentials: [
 			{
 				name: 'tchopApi',
@@ -30,14 +29,15 @@ export class TchopCreateText implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Story ID',
-				name: 'storyId',
+				displayName: 'Channel ID',
+				name: 'channelId',
 				type: 'string',
 				default: '',
 				required: true,
-				description: 'The ID of the story to create the post in',
+				description: 'The ID of the channel to get stories from',
 			},
 		],
+		usableAsTool: true,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -46,15 +46,9 @@ export class TchopCreateText implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const storyId = this.getNodeParameter('storyId', i) as string;
-				const endpoint = `/root/api/v3/extension/story/${storyId}`;
-
-				const body: IDataObject = {
-					// Text fields
-				};
-
-				const responseData = await tchopApiRequest.call(this, 'POST', endpoint, body);
-				const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
+				const channelId = this.getNodeParameter('channelId', i) as string;
+				const responseData = await getStoriesByChannelId.call(this, parseInt(channelId, 10));
+				const executionData = this.helpers.returnJsonArray(responseData as unknown as IDataObject[]);
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {

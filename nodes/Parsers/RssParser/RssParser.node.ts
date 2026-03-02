@@ -5,13 +5,14 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from 'n8n-workflow';
-import Parser from 'rss-parser';
 import { AssignmentCollectionValue } from 'n8n-workflow/dist/esm/interfaces';
+import { RssParserWrapper } from './RssParserWrapper';
 
 export class RssParser implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Parsers: RSS',
 		name: 'rssParser',
+		icon: 'file:../../Tchop/shared/icons/tchop.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Fetch and parse an RSS feed and output items',
@@ -43,15 +44,18 @@ export class RssParser implements INodeType {
 				name: 'triggerOnNew',
 				type: 'boolean',
 				default: true,
-				description: 'If enabled, only emit items not seen before for this Source ID',
+				description: 'Whether to only emit items not seen before for this Source ID',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
-				default: 10,
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
 				required: true,
-				description: 'The maximum number of items to return from the RSS feed',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Max Seen Items',
@@ -74,7 +78,7 @@ export class RssParser implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const parser = new Parser();
+		const parser = new RssParserWrapper();
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -84,40 +88,31 @@ export class RssParser implements INodeType {
 				const limit = this.getNodeParameter('limit', i) as number;
 				const maxSeenItems = this.getNodeParameter('maxSeenItems', i) as number;
 				const metadata = this.getNodeParameter('metadata', i, {}) as AssignmentCollectionValue;
-				const metadataObj = metadata.assignments.reduce(
-					(acc, { name, value }) => ({ ...acc, [name]: value }),
-					{},
-				);
+				let metadataObj = {};
 
-				const feed = await parser.parseURL(rssUri);
-				const itemsToProcess = (feed.items ?? []).slice(0, limit);
+				if (metadata.assignments) {
+					metadataObj = metadata.assignments.reduce(
+						(acc, { name, value }) => ({ ...acc, [name]: value }),
+						{},
+					);
+				}
+
+				const itemsToProcess = (await parser.parseURL(rssUri)).slice(0, limit);
 
 				// Persistent storage per node, partitioned by sourceId
-				const staticData = this.getWorkflowStaticData('node') as any;
-				if (!staticData.seenBySource) staticData.seenBySource = {} as Record<string, string[]>;
-				if (!staticData.seenBySource[sourceId]) staticData.seenBySource[sourceId] = [];
-				const seen = new Set<string>(staticData.seenBySource[sourceId]);
+				const staticData = this.getWorkflowStaticData('node') as Record<string, any>;
+				if (!staticData.seenBySource) {
+					staticData.seenBySource = {} as Record<string, string[]>;
+				}
+				if (!staticData.seenBySource[sourceId]) {
+					staticData.seenBySource[sourceId] = [];
+				}
+				const seen = new Set<string>(staticData.seenBySource[sourceId] as string[]);
 
-				const itemsOut: Array<{
-					title?: string;
-					description?: string;
-					url?: string;
-					guid?: string;
-					_meta?: Record<string, string>;
-				}> = [];
+				const itemsOut: Array<Record<string, unknown>> = [];
 
 				for (const item of itemsToProcess) {
-					const guid = (item.guid || item.id || item.link || '').toString();
-					const url = (item.link || '').toString();
-					const title = (item.title || '').toString();
-					const description = (
-						item.contentSnippet ||
-						item.content ||
-						item.summary ||
-						''
-					).toString();
-
-					const identifier = guid || url;
+					const identifier = item.guid || item.url;
 					if (triggerOnNew) {
 						if (identifier && seen.has(identifier)) {
 							continue; // skip already seen
@@ -125,10 +120,7 @@ export class RssParser implements INodeType {
 					}
 
 					itemsOut.push({
-						title,
-						description,
-						url,
-						guid: guid || undefined,
+						...(item as unknown as Record<string, unknown>),
 						_meta: metadataObj,
 					});
 
@@ -144,7 +136,7 @@ export class RssParser implements INodeType {
 				}
 				staticData.seenBySource[sourceId] = newSeenArray;
 				// Mark static data as changed so n8n persists it between executions (especially in manual runs)
-				(staticData as any).__dataChanged = true;
+				staticData.__dataChanged = true;
 
 				// If triggerOnNew is false and feed had no items, itemsOut stays empty (expected)
 				const executionData = this.helpers.returnJsonArray(itemsOut as any);

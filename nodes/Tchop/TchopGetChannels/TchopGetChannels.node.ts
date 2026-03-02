@@ -6,38 +6,29 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from 'n8n-workflow';
-import { tchopApiRequest } from '../shared/GenericFunctions';
+import { getChannels } from '../shared/graphql/channels';
 
-export class TchopCreateThread implements INodeType {
+export class TchopGetChannels implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Tchop: Create Thread',
-		name: 'tchopCreateThread',
+		displayName: 'Tchop: Get Channels',
+		name: 'tchopGetChannels',
 		icon: 'file:../shared/icons/tchop.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Create a thread post in tchop',
+		description: 'Get list of channels from tchop',
 		defaults: {
-			name: 'Tchop Create Thread',
+			name: 'Tchop Get Channels',
 		},
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
-		usableAsTool: true,
 		credentials: [
 			{
 				name: 'tchopApi',
 				required: true,
 			},
 		],
-		properties: [
-			{
-				displayName: 'Story ID',
-				name: 'storyId',
-				type: 'string',
-				default: '',
-				required: true,
-				description: 'The ID of the story to create the post in',
-			},
-		],
+		properties: [],
+		usableAsTool: true,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -46,15 +37,8 @@ export class TchopCreateThread implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const storyId = this.getNodeParameter('storyId', i) as string;
-				const endpoint = `/root/api/v3/extension/story/${storyId}`;
-
-				const body: IDataObject = {
-					// Thread fields
-				};
-
-				const responseData = await tchopApiRequest.call(this, 'POST', endpoint, body);
-				const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
+				const responseData = await getChannels.call(this);
+				const executionData = this.helpers.returnJsonArray(responseData as unknown as IDataObject[]);
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {

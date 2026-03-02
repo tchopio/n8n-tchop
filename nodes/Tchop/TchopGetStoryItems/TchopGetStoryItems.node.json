@@ -1,0 +1,58 @@
+{
+	"displayName": "Tchop: Get Story Items",
+	"name": "tchopGetStoryItems",
+	"icon": "file:../shared/icons/tchop.svg",
+	"group": ["transform"],
+	"version": 1,
+	"description": "Get list of items from a specific story",
+	"defaults": {
+		"name": "Tchop Get Story Items"
+	},
+	"inputs": ["main"],
+	"outputs": ["main"],
+	"credentials": [
+		{
+			"name": "tchopApi",
+			"required": true
+		}
+	],
+	"properties": [
+		{
+			"displayName": "Story ID",
+			"name": "storyId",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The ID of the story to get items from"
+		},
+		{
+			"displayName": "Time Range",
+			"name": "timeRange",
+			"type": "options",
+			"options": [
+				{
+					"name": "All",
+					"value": "all"
+				},
+				{
+					"name": "Today",
+					"value": "today"
+				},
+				{
+					"name": "Last 24 Hours",
+					"value": "last24h"
+				},
+				{
+					"name": "Last 7 Days",
+					"value": "last7d"
+				},
+				{
+					"name": "Last 30 Days",
+					"value": "last30d"
+				}
+			],
+			"default": "all",
+			"description": "Filter data by time"
+		}
+	]
+}

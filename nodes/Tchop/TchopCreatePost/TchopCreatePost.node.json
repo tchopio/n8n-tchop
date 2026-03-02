@@ -1,0 +1,65 @@
+{
+	"displayName": "Tchop: Create Post",
+	"name": "tchopCreatePost",
+	"icon": "file:../shared/icons/tchop.svg",
+	"group": ["transform"],
+	"version": 1,
+	"description": "Create a post in tchop",
+	"defaults": {
+		"name": "Tchop Create Post"
+	},
+	"inputs": ["main"],
+	"outputs": ["main"],
+	"credentials": [
+		{
+			"name": "tchopApi",
+			"required": true
+		}
+	],
+	"properties": [
+		{
+			"displayName": "Story ID",
+			"name": "storyId",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The ID of the story to create the post in"
+		},
+		{
+			"displayName": "Title",
+			"name": "title",
+			"type": "string",
+			"default": "",
+			"required": true,
+			"description": "The title of the post"
+		},
+		{
+			"displayName": "Headline",
+			"name": "headline",
+			"type": "string",
+			"default": "",
+			"description": "Headline shown in the post (defaults to Title if empty)"
+		},
+		{
+			"displayName": "Source Name",
+			"name": "sourceName",
+			"type": "string",
+			"default": "n8n",
+			"description": "Source name to attribute the post to"
+		},
+		{
+			"displayName": "Abstract",
+			"name": "abstract",
+			"type": "string",
+			"default": "",
+			"description": "The abstract of the post"
+		},
+		{
+			"displayName": "Content (JSON Array)",
+			"name": "content",
+			"type": "string",
+			"default": "",
+			"description": "The content of the post as a JSON array of content blocks"
+		}
+	]
+}
