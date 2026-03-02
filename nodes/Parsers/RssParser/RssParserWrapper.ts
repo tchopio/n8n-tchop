@@ -1,6 +1,3 @@
-// eslint-disable-next-line @n8n/community-nodes/no-restricted-imports
-import Parser from 'rss-parser';
-
 export interface BaseRssItem {
 	title: string;
 	description: string;
@@ -19,68 +16,145 @@ export interface BaseRssItem {
 	raw?: unknown;
 }
 
-export class RssParserWrapper {
-	private parser: Parser;
+interface RawFeed {
+	title: string;
+	link: string;
+	imageUrl: string;
+	itunesAuthor: string;
+	items: RawItem[];
+}
 
-	constructor() {
-		this.parser = new Parser({
-			customFields: {
-				item: [
-					['media:group', 'mediaGroup'],
-					['media:content', 'mediaContent', { keepArray: true }],
-					['media:thumbnail', 'mediaThumbnail'],
-					['media:description', 'mediaDescription'],
-					['media:community', 'mediaCommunity'],
-					['itunes:image', 'itunesImage'],
-					['itunes:author', 'itunesAuthor'],
-					['itunes:summary', 'itunesSummary'],
-					['itunes:subtitle', 'itunesSubtitle'],
-					['itunes:duration', 'itunesDuration'],
-					['dc:creator', 'dcCreator'],
-				],
+interface RawItem {
+	title: string;
+	link: string;
+	guid: string;
+	description: string;
+	content: string;
+	pubDate: string;
+	author: string;
+	categories: string[];
+	enclosureUrl: string;
+	enclosureType: string;
+	mediaContentUrl: string;
+	mediaThumbnailUrl: string;
+	mediaDescription: string;
+	itunesAuthor: string;
+	itunesImage: string;
+	itunesSummary: string;
+	itunesSubtitle: string;
+	dcCreator: string;
+}
+
+/**
+ * Extract text content from an XML tag, handling CDATA sections.
+ */
+function tagText(xml: string, tag: string): string {
+	// Match both namespaced and non-namespaced, handle CDATA
+	const re = new RegExp(`<${tag}[^>]*>\\s*(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))\\s*</${tag}>`, 'i');
+	const m = xml.match(re);
+	if (!m) return '';
+	return (m[1] ?? m[2] ?? '').trim();
+}
+
+/**
+ * Extract an attribute value from the first occurrence of a tag.
+ */
+function tagAttr(xml: string, tag: string, attr: string): string {
+	const re = new RegExp(`<${tag}[^>]*?\\s${attr}\\s*=\\s*["']([^"']*)["']`, 'i');
+	return xml.match(re)?.[1] ?? '';
+}
+
+/**
+ * Split XML into blocks matching a given tag.
+ */
+function splitTag(xml: string, tag: string): string[] {
+	const re = new RegExp(`<${tag}[\\s>][\\s\\S]*?</${tag}>`, 'gi');
+	return xml.match(re) ?? [];
+}
+
+function stripHtml(html: string): string {
+	return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function parseRawItem(itemXml: string): RawItem {
+	return {
+		title: tagText(itemXml, 'title'),
+		link: tagText(itemXml, 'link') || tagAttr(itemXml, 'link', 'href'),
+		guid: tagText(itemXml, 'guid') || tagText(itemXml, 'id'),
+		description: tagText(itemXml, 'description') || tagText(itemXml, 'summary'),
+		content: tagText(itemXml, 'content:encoded') || tagText(itemXml, 'content'),
+		pubDate: tagText(itemXml, 'pubDate') || tagText(itemXml, 'published') || tagText(itemXml, 'updated'),
+		author: tagText(itemXml, 'author') || tagText(itemXml, 'dc:creator'),
+		categories: splitTag(itemXml, 'category').map((c) => tagText(c, 'category') || stripHtml(c)),
+		enclosureUrl: tagAttr(itemXml, 'enclosure', 'url'),
+		enclosureType: tagAttr(itemXml, 'enclosure', 'type'),
+		mediaContentUrl: tagAttr(itemXml, 'media:content', 'url'),
+		mediaThumbnailUrl: tagAttr(itemXml, 'media:thumbnail', 'url'),
+		mediaDescription: tagText(itemXml, 'media:description'),
+		itunesAuthor: tagText(itemXml, 'itunes:author'),
+		itunesImage: tagAttr(itemXml, 'itunes:image', 'href'),
+		itunesSummary: tagText(itemXml, 'itunes:summary'),
+		itunesSubtitle: tagText(itemXml, 'itunes:subtitle'),
+		dcCreator: tagText(itemXml, 'dc:creator'),
+	};
+}
+
+function parseFeed(xml: string): RawFeed {
+	// Detect Atom vs RSS
+	const isAtom = /<feed[\s>]/i.test(xml);
+	const itemTag = isAtom ? 'entry' : 'item';
+
+	return {
+		title: tagText(xml, 'title'),
+		link: isAtom ? tagAttr(xml, 'link', 'href') : tagText(xml, 'link'),
+		imageUrl: tagAttr(xml, 'itunes:image', 'href')
+			|| tagText(xml, 'url')  // inside <image><url>
+			|| '',
+		itunesAuthor: tagText(xml, 'itunes:author'),
+		items: splitTag(xml, itemTag).map(parseRawItem),
+	};
+}
+
+export class RssParserWrapper {
+	async parseURL(url: string): Promise<BaseRssItem[]> {
+		const response = await fetch(url, {
+			headers: {
+				'User-Agent': 'n8n-nodes-tchop RSS Parser',
+				'Accept': 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
 			},
 		});
-	}
-
-	async parseURL(url: string): Promise<BaseRssItem[]> {
-		const feed = await this.parser.parseURL(url);
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return feed.items.map((item) => this.transformItem(item as Record<string, any>, feed as Record<string, any>));
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private transformItem(item: Record<string, any>, feed: Record<string, any>): BaseRssItem {
-		const guid = (item.guid || item.id || item.link || '').toString();
-		const url = (item.link || '').toString();
-		const title = (item.title || '').toString();
-
-		// Content / Description
-		const content = (item.content || item.summary || item.itunesSummary || '').toString();
-		let description = (item.contentSnippet || item.itunesSubtitle || item.mediaDescription || content || '').toString();
-
-		// If it's a YouTube feed, mediaGroup might have a better description
-		if (item.mediaGroup && item.mediaGroup['media:description']) {
-			description = item.mediaGroup['media:description'][0];
+		if (!response.ok) {
+			throw new Error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`);
 		}
+		const xml = await response.text();
+		const feed = parseFeed(xml);
+		return feed.items.map((item) => this.transformItem(item, feed));
+	}
 
-		// Image URL Extraction
+	private transformItem(item: RawItem, feed: RawFeed): BaseRssItem {
+		const guid = item.guid || item.link || '';
+		const url = item.link || '';
+		const title = item.title || '';
+
+		const content = item.content || item.description || item.itunesSummary || '';
+		const description = item.itunesSubtitle
+			|| item.mediaDescription
+			|| stripHtml(item.description || content)
+			|| '';
+
+		// Image URL extraction
 		let imageUrl = '';
-		if (item.enclosure && item.enclosure.url && item.enclosure.type?.startsWith('image/')) {
-			imageUrl = item.enclosure.url;
-		} else if (item.mediaContent) {
-			const mediaArray = Array.isArray(item.mediaContent) ? item.mediaContent : [item.mediaContent];
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const imageMedia = mediaArray.find((m: any) => m.$?.medium === 'image' || m.$?.type?.startsWith('image/')) || mediaArray[0];
-			imageUrl = imageMedia?.$?.url || '';
-		} else if (item.mediaThumbnail) {
-			imageUrl = item.mediaThumbnail?.$?.url || '';
+		if (item.enclosureUrl && item.enclosureType?.startsWith('image/')) {
+			imageUrl = item.enclosureUrl;
+		} else if (item.mediaContentUrl) {
+			imageUrl = item.mediaContentUrl;
+		} else if (item.mediaThumbnailUrl) {
+			imageUrl = item.mediaThumbnailUrl;
 		} else if (item.itunesImage) {
-			imageUrl = typeof item.itunesImage === 'string' ? item.itunesImage : item.itunesImage?.$?.href || '';
-		} else if (item.mediaGroup && item.mediaGroup['media:thumbnail']) {
-			imageUrl = item.mediaGroup['media:thumbnail'][0]?.$?.url || '';
+			imageUrl = item.itunesImage;
 		}
 
-		// Fallback: extract from content
+		// Fallback: extract from content HTML
 		if (!imageUrl && content) {
 			const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
 			if (imgMatch) {
@@ -88,51 +162,21 @@ export class RssParserWrapper {
 			}
 		}
 
-		// Author Info
-		let authorName = (item.author || item.creator || item.dcCreator || item.itunesAuthor || item.itunes?.author || '').toString();
-		let authorHandle = '';
-		let authorImage = '';
+		// Author
+		const authorName = item.author || item.dcCreator || item.itunesAuthor || feed.itunesAuthor || feed.title || '';
+		const authorHandle = feed.link || '';
+		const authorImage = feed.imageUrl || '';
 
-		// Root Channel info as fallbacks
-		const rootAuthorName = (feed.itunes?.author || feed.itunes?.owner?.name || feed.title || '').toString();
-		const rootAuthorHandle = (feed.link || '').toString();
-		const rootAuthorImage = (feed.image?.url || feed.itunes?.image || '').toString();
-
-		// YouTube specific author image
-		if (!rootAuthorImage && feed.items?.[0]?.author?.uri?.includes('youtube.com')) {
-			// YouTube RSS doesn't provide channel image easily in the feed,
-			// but we've already done our best with standard fields.
+		// Parse date to ISO
+		let pubDate = item.pubDate || '';
+		if (pubDate) {
+			const parsed = new Date(pubDate);
+			if (!isNaN(parsed.getTime())) {
+				pubDate = parsed.toISOString();
+			}
 		}
 
-		if (!authorName) {
-			authorName = rootAuthorName;
-		}
-
-		if (!authorHandle) {
-			authorHandle = rootAuthorHandle;
-		}
-
-		if (!authorImage) {
-			authorImage = rootAuthorImage;
-		}
-
-		// YouTube specific author extraction
-		if (item.author && typeof item.author === 'object') {
-			// Some parsers might return object for author
-		}
-
-		// If it's a YouTube feed, it might have author info in a specific way
-		if (item.mediaGroup && item.mediaGroup['media:community']) {
-			// This is just an example, YouTube RSS doesn't always have author image here
-		}
-
-		// Support for some podcast/other feeds that might have author as an object with name/uri/etc
-		if (typeof item.author === 'object') {
-			authorName = item.author.name || authorName;
-			authorHandle = item.author.uri || authorHandle;
-		}
-
-		const source = (feed.title || '').toString();
+		const source = feed.title || '';
 
 		return {
 			title,
@@ -141,9 +185,9 @@ export class RssParserWrapper {
 			url,
 			imageUrl,
 			guid,
-			pubDate: item.isoDate || item.pubDate || '',
+			pubDate,
 			source,
-			categories: item.categories || [],
+			categories: item.categories.filter(Boolean),
 			author: {
 				name: authorName,
 				handle: authorHandle,

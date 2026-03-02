@@ -61,7 +61,5 @@
 		"n8n-workflow": "*"
 	},
 	"dependencies": {
-		"graphql": "^16.12.0",
-		"rss-parser": "^3.13.0"
 	}
 }
