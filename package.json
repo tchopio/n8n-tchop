@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tchop",
-	"version": "0.0.1",
+	"version": "0.0.5",
 	"description": "n8n nodes for tchop",
 	"license": "MIT",
 	"homepage": "https://tchop.io",
@@ -14,7 +14,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tchop-io/n8n-nodes-tchop.git"
+		"url": "https://github.com/tchopio/n8n-tchop.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
