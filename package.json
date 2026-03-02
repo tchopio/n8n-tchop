@@ -1,24 +1,25 @@
 {
-	"name": "n8n-nodes-<...>",
-	"version": "0.1.0",
-	"description": "",
+	"name": "n8n-nodes-tchop",
+	"version": "0.0.1",
+	"description": "n8n nodes for tchop",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://tchop.io",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"tchop"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "tchop",
+		"email": "support@tchop.io"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/tchop-io/n8n-nodes-tchop.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
 		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
+		"dev": "N8N_LOG_LEVEL=debug && n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
@@ -31,16 +32,27 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/GithubIssuesApi.credentials.js",
-			"dist/credentials/GithubIssuesOAuth2Api.credentials.js"
+			"dist/credentials/TchopApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/GithubIssues/GithubIssues.node.js",
-			"dist/nodes/Example/Example.node.js"
+			"dist/nodes/Tchop/TchopCreateArticle/TchopCreateArticle.node.js",
+			"dist/nodes/Tchop/TchopCreateAudio/TchopCreateAudio.node.js",
+			"dist/nodes/Tchop/TchopCreatePost/TchopCreatePost.node.js",
+			"dist/nodes/Tchop/TchopCreateSocial/TchopCreateSocial.node.js",
+			"dist/nodes/Tchop/TchopGetContent/TchopGetContent.node.js",
+			"dist/nodes/Tchop/TchopGetChannels/TchopGetChannels.node.js",
+			"dist/nodes/Tchop/TchopGetStories/TchopGetStories.node.js",
+			"dist/nodes/Tchop/TchopGetStoryItems/TchopGetStoryItems.node.js",
+			"dist/nodes/Tchop/TchopDeleteItem/TchopDeleteItem.node.js",
+			"dist/nodes/Tchop/TchopMarkdownToPost/TchopMarkdownToPost.node.js",
+			"dist/nodes/Tchop/TchopUploadImageByUrl/TchopUploadImageByUrl.node.js",
+			"dist/nodes/Parsers/RssParser/RssParser.node.js",
+			"dist/nodes/Parsers/OpenGraphParser/OpenGraphParser.node.js"
 		]
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "*",
+		"@types/node": "^25.3.3",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",

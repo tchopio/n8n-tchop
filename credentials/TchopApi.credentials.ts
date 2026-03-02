@@ -1,0 +1,70 @@
+import {
+	Icon,
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
+
+export class TchopApi implements ICredentialType {
+	name = 'tchopApi';
+	displayName = 'Tchop API';
+	icon: Icon = 'file:icons/ic_tchop.svg';
+	group = ['main'];
+	description = 'Use your Tchop API credentials to authenticate to the Tchop API.';
+	documentationUrl = 'https://github.com/tchop-io/n8n-nodes-tchop';
+	properties: INodeProperties[] = [
+		{
+			displayName: 'Organization Token',
+			name: 'organisationToken',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			required: true,
+		},
+		{
+			displayName: 'User Token',
+			name: 'userToken',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			required: true,
+		},
+		{
+			displayName: 'Base URL',
+			name: 'baseUrl',
+			type: 'string',
+			default: '',
+			required: true,
+		},
+		{
+			displayName: 'Sub-domain',
+			name: 'subDomain',
+			type: 'string',
+			default: '',
+			description: 'Organisation sub-domain to target (e.g. myorg)',
+		},
+	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			method: 'POST',
+			url: '={{$credentials.baseUrl}}/api/graphql/webapp',
+			body: {
+				query: 'query getCurrentUser{ me{ id } }',
+			},
+		},
+	};
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				'x-tchop-app-organisation-token': '={{$credentials.organisationToken}}',
+				'x-tchop-token': '={{$credentials.userToken}}',
+				'x-tchop-webapp-organisation': '={{$credentials.subDomain}}',
+				Cookie: '=mz-account={{$credentials.userToken}}',
+			},
+		},
+	};
+}
