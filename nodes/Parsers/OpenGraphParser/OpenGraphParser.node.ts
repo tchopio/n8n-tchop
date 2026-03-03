@@ -101,7 +101,6 @@ export class OpenGraphParser implements INodeType {
 					returnData.push({ json: { error: error.message } });
 					continue;
 				}
-				throw error;
 			}
 		}
 
