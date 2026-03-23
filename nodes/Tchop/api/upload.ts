@@ -111,7 +111,7 @@ export async function uploadImageUrl(
 	try {
 		downloadResponse = await this.helpers.httpRequest({
 			method: 'GET',
-			url: params.url,
+			url: params.url.replace(/&amp;/g, '&'),
 			encoding: 'arraybuffer',
 			returnFullResponse: true,
 		});

@@ -7,6 +7,7 @@ import {
 	NodeConnectionTypes,
 	NodeOperationError,
 } from 'n8n-workflow';
+import { AssignmentCollectionValue } from 'n8n-workflow/dist/esm/interfaces';
 import { createPost, PostCreateParams } from '../shared/graphql/post';
 
 export class TchopCreatePost implements INodeType {
@@ -74,6 +75,12 @@ export class TchopCreatePost implements INodeType {
 				default: '',
 				description: 'The content of the post as a JSON array of content blocks',
 			},
+			{
+				displayName: 'Metadata',
+				name: 'metadata',
+				type: 'assignmentCollection',
+				default: {},
+			},
 		],
 	};
 
@@ -116,10 +123,19 @@ export class TchopCreatePost implements INodeType {
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				contentBlocks: contentBlocks as any,
 				};
+				const metadata = this.getNodeParameter('metadata', i, {}) as AssignmentCollectionValue;
+				let metadataObj = {};
+				if (metadata.assignments) {
+					metadataObj = metadata.assignments.reduce(
+						(acc, { name, value }) => ({ ...acc, [name]: value }),
+						{},
+					);
+				}
+
 				const responseData = (await createPost.call(this, params)) as unknown as IDataObject;
 				// Handle potential nested data object from graphql-request
 				const data = JSON.parse(JSON.stringify(responseData));
-				const executionData = this.helpers.returnJsonArray(data as IDataObject);
+				const executionData = this.helpers.returnJsonArray({ ...(data as IDataObject), _meta: metadataObj });
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {

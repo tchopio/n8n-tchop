@@ -6,6 +6,7 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from 'n8n-workflow';
+import { AssignmentCollectionValue } from 'n8n-workflow/dist/esm/interfaces';
 import { createAudioPost, CreateAudioPostInput } from '../api/create_audio';
 
 export class TchopCreateAudio implements INodeType {
@@ -95,6 +96,12 @@ export class TchopCreateAudio implements INodeType {
 				required: true,
 				description: 'Whether the article is published',
 			},
+			{
+				displayName: 'Metadata',
+				name: 'metadata',
+				type: 'assignmentCollection',
+				default: {},
+			},
 		],
 	};
 
@@ -126,8 +133,17 @@ export class TchopCreateAudio implements INodeType {
 					published,
 				};
 
+				const metadata = this.getNodeParameter('metadata', i, {}) as AssignmentCollectionValue;
+				let metadataObj = {};
+				if (metadata.assignments) {
+					metadataObj = metadata.assignments.reduce(
+						(acc, { name, value }) => ({ ...acc, [name]: value }),
+						{},
+					);
+				}
+
 				const responseData = (await createAudioPost.call(this, params)) as unknown as IDataObject;
-				const executionData = this.helpers.returnJsonArray(responseData);
+				const executionData = this.helpers.returnJsonArray({ ...responseData, _meta: metadataObj });
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {

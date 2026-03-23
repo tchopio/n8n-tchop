@@ -105,6 +105,100 @@ query GetChannels {
 }
 `;
 
+export const GET_STORY_CARDS_FEED_QUERY = `
+query GetStoryCardsFeed($storyId: Int!, $orderDirection: OrderDirectionEnum!, $page: Int, $size: Int, $filter: GetStoryCardsFeedFilterArgs) {
+  storyCardsFeed(storyId: $storyId, orderDirection: $orderDirection, page: $page, size: $size, filter: $filter) {
+    payload {
+      items {
+        id
+        type
+        storyId
+        position
+        postedAt
+        createdAt
+        updatedAt
+        commentsCount
+        status
+        author {
+          screenName
+        }
+        content {
+          ... on StoryCardArticleContent {
+            title
+            url
+            headline
+            abstract
+            contentAuthor
+            contentReadTime
+            sourceName
+            gallery { image { url } }
+          }
+          ... on StoryCardPostContent {
+            title
+            headline
+            abstract
+            contentAuthor
+            contentReadTime
+            sourceName
+            gallery { image { url } }
+          }
+          ... on StoryCardEditorialContent {
+            headline
+            sourceName
+            text
+          }
+          ... on StoryCardThreadContent {
+            title
+          }
+          ... on StoryCardAudioContent {
+            headline
+            sourceName
+            text
+          }
+          ... on StoryCardImageContent {
+            headline
+            sourceName
+            text
+            gallery { image { url } }
+          }
+          ... on StoryCardVideoContent {
+            headline
+            sourceName
+            text
+          }
+          ... on StoryCardQuoteContent {
+            headline
+            quote
+            quotePerson
+            quoteSource
+            url
+          }
+          ... on StoryCardPollContent {
+            headline
+            text
+          }
+          ... on StoryCardPdfContent {
+            headline
+            sourceName
+            text
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        page
+        totalItems
+        totalPages
+      }
+    }
+    error {
+      __typename
+      ... on StoryNotFoundError { message }
+    }
+  }
+}
+`;
+
 export const GET_STORIES_BY_CHANNEL_ID_QUERY = `
 query GetStoriesByChannelId($channelId: Int!, $filter: GetStoriesByChannelIdFilterArgs) {
   storiesByChannelId(channelId: $channelId, filter: $filter) {

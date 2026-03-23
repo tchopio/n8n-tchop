@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tchop",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "n8n nodes for tchop",
 	"license": "MIT",
 	"homepage": "https://tchop.io",
@@ -23,7 +23,8 @@
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "n8n-node prerelease",
+		"reset": "n8n-node user-management:reset"
 	},
 	"files": [
 		"dist"

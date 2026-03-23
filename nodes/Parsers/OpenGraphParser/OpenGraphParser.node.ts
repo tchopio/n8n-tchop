@@ -66,7 +66,6 @@ export class OpenGraphParser implements INodeType {
 					const content = match[1].match(/content=["']([^"']*)["']/i)?.[1];
 					const property = match[1].match(/property=["']([^"']*)["']/i)?.[1];
 					const name = match[1].match(/name=["']([^"']*)["']/i)?.[1];
-
 					const key = property || name;
 					if (key && content !== undefined) {
 						metadata[key] = content;

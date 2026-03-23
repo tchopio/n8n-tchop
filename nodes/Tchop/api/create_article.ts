@@ -9,7 +9,7 @@ export interface CreateArticlePostInput extends CreatePostInput {
 	source: string;
 	title: string;
 	description?: string;
-	image?: string;
+	image?: string | string[];
 	url: string;
 	author?: string;
 	style?: string;
@@ -46,11 +46,11 @@ export async function createArticlePost(
 ): Promise<StoryCardPostInStoryResult> {
 	const gallery: Array<{ image: { id: number } }> = [];
 	if (params.image) {
-		const response = await uploadImageUrl.call(this, {
-			url: params.image,
-		});
-		const imageId = response.id as number;
-		gallery.push({ image: { id: imageId } });
+		const imageUrls = Array.isArray(params.image) ? params.image : [params.image];
+		for (const imageUrl of imageUrls) {
+			const response = await uploadImageUrl.call(this, { url: imageUrl });
+			gallery.push({ image: { id: response.id as number } });
+		}
 	}
 	const input: ArticleInput = {
 		storyId: params.storyId,

@@ -165,6 +165,40 @@ export interface Story {
 	isReadOnly: boolean;
 }
 
+export interface StoryCardFeedItem {
+	id: number;
+	type: string;
+	storyId: number;
+	position: number;
+	postedAt: string;
+	createdAt: string;
+	updatedAt: string;
+	commentsCount: number;
+	status: string;
+	author?: {
+		screenName: string;
+	};
+	content: Record<string, unknown>;
+}
+
+export interface GetStoryCardsFeedResult {
+	storyCardsFeed: {
+		payload: {
+			items: StoryCardFeedItem[];
+			pageInfo: {
+				hasNextPage: boolean;
+				page: number;
+				totalItems: number;
+				totalPages: number;
+			};
+		};
+		error?: {
+			__typename: string;
+			message?: string;
+		};
+	};
+}
+
 export interface GetStoriesByChannelIdResult {
 	storiesByChannelId: {
 		items: Story[];

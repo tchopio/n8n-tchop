@@ -43,6 +43,7 @@ export async function tchopGraphQLRequest<T = unknown>(
 	} catch (error) {
 		if (error.response && error.response.body) {
 			const errorData = typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
+
 			if (errorData.errors) {
 				throw new Error(`GraphQL Error: ${errorData.errors.map((e: { message: string }) => e.message).join(', ')}`);
 			}

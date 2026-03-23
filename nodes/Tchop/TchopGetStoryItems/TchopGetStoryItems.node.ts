@@ -6,8 +6,47 @@ import {
 	INodeTypeDescription,
 	NodeConnectionTypes,
 } from 'n8n-workflow';
-import { tchopApiRequest } from '../shared/GenericFunctions';
-import { sanitizeStoryItem } from '../shared/SanitizeFunctions';
+import { tchopGraphQLRequest } from '../api/client';
+import { GET_STORY_CARDS_FEED_QUERY } from '../shared/graphql/templates';
+import { GetStoryCardsFeedResult, StoryCardFeedItem } from '../shared/graphql/models';
+
+function formatStoryCard(card: StoryCardFeedItem): IDataObject {
+	const content = card.content as IDataObject;
+
+	const result: IDataObject = {
+		id: card.id,
+		postedTime: card.postedAt,
+		type: card.type,
+		created: card.createdAt,
+		updated: card.updatedAt,
+		storyId: card.storyId,
+		position: card.position,
+		commentsCount: card.commentsCount,
+		status: card.status,
+		title: content.title,
+		url: content.url,
+		sourceName: content.sourceName,
+		headline: content.headline,
+		abstract: content.abstract,
+		contentAuthor: content.contentAuthor,
+		contentReadTime: content.contentReadTime,
+	};
+
+	if (card.author) {
+		result.author = {
+			name: card.author.screenName,
+		};
+	}
+
+	const gallery = content.gallery as Array<{ image?: { url?: string } }> | undefined;
+	if (gallery && gallery.length > 0 && gallery[0].image) {
+		result.image = {
+			url: gallery[0].image.url,
+		};
+	}
+
+	return result;
+}
 
 export class TchopGetStoryItems implements INodeType {
 	description: INodeTypeDescription = {
@@ -74,8 +113,8 @@ export class TchopGetStoryItems implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		const getTimeLimit = (range: string) => {
-			if (range === 'all') return 0;
+		const getFromDate = (range: string): string | undefined => {
+			if (range === 'all') return undefined;
 			const limit = new Date();
 			switch (range) {
 				case 'today':
@@ -91,57 +130,51 @@ export class TchopGetStoryItems implements INodeType {
 					limit.setDate(limit.getDate() - 30);
 					break;
 			}
-			return limit.getTime();
+			return limit.toISOString();
 		};
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const storyId = this.getNodeParameter('storyId', i) as string;
+				const storyId = parseInt(this.getNodeParameter('storyId', i) as string, 10);
 				const timeRange = this.getNodeParameter('timeRange', i) as string;
-				const timeLimit = getTimeLimit(timeRange);
+				const from = getFromDate(timeRange);
 
-				const allItems: IDataObject[] = [];
-				let offset = 0;
-				const limit = 75;
+				const allCards: IDataObject[] = [];
+				let page = 1;
+				const size = 15;
 				let hasMore = true;
+
 				while (hasMore) {
-					const itemsResponse = await tchopApiRequest.call(
+					const variables: IDataObject = {
+						storyId,
+						orderDirection: 'DESC',
+						page,
+						size,
+					};
+
+					if (from) {
+						variables.filter = { from };
+					}
+
+					const result = await tchopGraphQLRequest.call(
 						this,
-						'GET',
-						`/api/v4/stories/${storyId}/items`,
-						{},
-						{ offset, limit },
+						GET_STORY_CARDS_FEED_QUERY,
+						variables,
 					);
 
-					const itemsData = itemsResponse?.data;
+					const payload = (result as GetStoryCardsFeedResult).storyCardsFeed.payload;
 
-					if (itemsData && Array.isArray(itemsData)) {
-						let addedAny = false;
-						for (const item of itemsData) {
-							const publishedAt = new Date(item.postedTime || item.created).getTime();
-							if (publishedAt >= timeLimit) {
-								allItems.push(sanitizeStoryItem(item as IDataObject));
-								addedAny = true;
-							} else {
-								// Assuming items are sorted by date descending
-								hasMore = false;
-								break;
-							}
+					if (payload.items && payload.items.length > 0) {
+						for (const card of payload.items) {
+							allCards.push(formatStoryCard(card));
 						}
-
-						if (itemsData.length < limit) {
-							hasMore = false;
-						} else if (addedAny) {
-							offset += limit;
-						} else {
-							hasMore = false;
-						}
-					} else {
-						hasMore = false;
 					}
+
+					hasMore = payload.pageInfo.hasNextPage;
+					page++;
 				}
 
-				const executionData = this.helpers.returnJsonArray(allItems as IDataObject[]);
+				const executionData = this.helpers.returnJsonArray(allCards);
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {
